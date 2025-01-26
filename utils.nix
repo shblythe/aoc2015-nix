@@ -1,9 +1,11 @@
 let inherit(builtins)
+    any
     filter
     foldl'
     getAttr
     head
     isString
+    length
     split
     tail
     ;
@@ -30,9 +32,27 @@ in rec {
     # Split a string, by splitter
     splitString = splitter: string: filter (x: isString x && x != "" && x != "\n") (split splitter string);
 
+    stringCharList = string: splitString "" string;
+
     # Convert string to int
     stringToInt = string: foldl'
         (x: y: x + ((power 10 y.enum) * y.value))
         0
         (enumerate (reverse (map (x: digitValue x) (splitString "" string))));
+
+    _unique = outlist: inlist:
+        if inlist == [] then outlist
+        else if (any (x: x == (head inlist)) outlist) then _unique outlist (tail inlist)
+        else _unique (outlist ++ [(head inlist)]) (tail inlist);
+    # Return list contain only unique elements of the input list
+    unique = _unique [];
+
+    _oddListItems = outlist: inlist:
+        if inlist == [] then outlist
+        else if (length inlist) == 1 then outlist ++ [(head inlist)]
+        else _oddListItems (outlist ++ [(head inlist)]) (tail (tail inlist));
+    # Return 1st, 3rd, 5th items etc.
+    oddListItems = _oddListItems [];
+    # Return 2nd, 4th, etc.
+    evenListItems = list: oddListItems (tail list);
 }
